@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Expense Manager Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { font-family: Arial; background: #f4f6f8; margin: 0; }
+header { background: #2c3e50; color: white; padding: 15px; text-align: center; }
+.container { max-width: 550px; margin: 20px auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+input, button { width: 100%; padding: 10px; margin: 6px 0; }
+button { background: #27ae60; color: white; border: none; cursor: pointer; }
+button:hover { background: #219150; }
+ul { list-style: none; padding: 0; }
+li { background: #ecf0f1; margin: 5px 0; padding: 8px; border-radius: 4px; font-size: 14px; }
+.total { text-align: center; font-weight: bold; margin-top: 10px; }
+#chartBox { display: none; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+<h1>Expense Manager Tracker</h1>
+<p>Track daily & weekly expenses</p>
+</header>
+
+<div class="container">
+
+<input type="text" id="desc" placeholder="Expense Description">
+<input type="number" id="amount" placeholder="Amount (₹)">
+<input type="date" id="date">
+<button onclick="addExpense()">Add Expense</button>
+
+<ul id="list">
+<!-- You can pre-fill initial data here if you want, or leave empty -->
+</ul>
+
+<div class="total">
+Total Expense: ₹ <span id="total">0</span>
+</div>
+
+<button onclick="showGraph()">Show Expense Graph</button>
+
+<div id="chartBox">
+<canvas id="expenseChart"></canvas>
+</div>
+
+</div>
+
+<script>
+let total = 0;
+let expenses = [];
+let chart;
+
+function addExpense() {
+    const desc = document.getElementById("desc").value;
+    const amount = parseInt(document.getElementById("amount").value);
+    const date = document.getElementById("date").value;
+
+    if(!desc || !amount || !date) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    expenses.push({date, amount});
+    const li = document.createElement("li");
+    li.innerText = `${date} | ${desc} | ₹${amount}`;
+    document.getElementById("list").appendChild(li);
+
+    total += amount;
+    document.getElementById("total").innerText = total;
+
+    document.getElementById("desc").value = "";
+    document.getElementById("amount").value = "";
+    document.getElementById("date").value = "";
+}
+
+function showGraph() {
+    document.getElementById("chartBox").style.display = "block";
+
+    let dailyTotals = {};
+    expenses.forEach(e => {
+        dailyTotals[e.date] = (dailyTotals[e.date] || 0) + e.amount;
+    });
+
+    const labels = Object.keys(dailyTotals);
+    const data = Object.values(dailyTotals);
+
+    if(chart) chart.destroy();
+
+    chart = new Chart(document.getElementById("expenseChart"), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{label: 'Daily Expense (₹)', data: data, backgroundColor: '#3498db'}]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+}
+</script>
+
+</body>
+</html>
